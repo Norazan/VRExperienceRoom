@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRER Config Form", "VRER Config Form\VRER Config Form.csproj", "{CE807A28-A209-463C-AB5F-F3FC44589B76}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRERConfigForm", "VRER Config Form\VRERConfigForm.csproj", "{CE807A28-A209-463C-AB5F-F3FC44589B76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
