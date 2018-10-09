@@ -13,6 +13,8 @@ namespace VRER_Config_Form
     {
         bool started = false;
         DateTime timerStart;
+        List<DeviceSettings> currentSettings = new List<DeviceSettings>();
+        int currentSettings_index = 0;
 		public Form()
 		{
 			InitializeComponent();
@@ -67,27 +69,21 @@ namespace VRER_Config_Form
 
         private void UpdateLogs(string text)
         {
-            if (richTextBox1.InvokeRequired && richTextBox2.InvokeRequired && richTextBox3.InvokeRequired)
+            if (richTextBox2.InvokeRequired && richTextBox3.InvokeRequired)
             {
                 UpdateLogsCallback d = new UpdateLogsCallback(UpdateLogs);
                 Invoke(d, new object[] { text });
             }
             else
             {
-                richTextBox1.AppendText(text);
                 richTextBox2.AppendText(text);
                 richTextBox3.AppendText(text);
             }
         }
 
-        private string MsToTimestamp(string ms)
+        private string MsToTimestamp(int ms)
         {
-            int _ms;
-            if(!int.TryParse(ms, out _ms))
-            {
-                return "";
-            }
-            var seconds = _ms / 1000;
+            var seconds = ms / 1000;
             var hours = seconds / 3600;
             seconds = seconds % 3600;
             var minutes = seconds / 60;
@@ -95,7 +91,7 @@ namespace VRER_Config_Form
             return hours.ToString("00") + ":" + minutes.ToString("00") + ":" + seconds.ToString("00");
         }
 
-        private string TimestampToMs(string timestamp)
+        private int TimestampToMs(string timestamp)
         {
             string[] splittedTimestamp = timestamp.Split(':');
             string s_Hours = splittedTimestamp[0];
@@ -106,9 +102,9 @@ namespace VRER_Config_Form
             int i_seconds;
             if(!int.TryParse(s_Hours, out i_hours) || !int.TryParse(s_Minutes, out i_minutes) || !int.TryParse(s_Seconds, out i_seconds))
             {
-                return "";
+                return -1;
             }
-            return "" + (((i_hours * 3600) + (i_minutes * 60) + i_seconds) * 1000);
+            return ((i_hours * 3600) + (i_minutes * 60) + i_seconds) * 1000;
         }
 
 		private void button1_Click(object sender, EventArgs e)
@@ -161,49 +157,11 @@ namespace VRER_Config_Form
             }
         }
 
-        private void button5_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "JSON File (*.json)|*.json";
-            openFileDialog.Title = "Import  config file...";
-
-            if(openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                using (StreamReader sr = new StreamReader(openFileDialog.FileName))
-                {
-                    string json = sr.ReadToEnd();
-                    List<DeviceSettings> settings = JsonConvert.DeserializeObject<List<DeviceSettings>>(json);
-                    listView2.Items.Clear();
-                    foreach(DeviceSettings x in settings)
-                    {
-                        ListViewItem lvi = new ListViewItem(MsToTimestamp(x.Timestamp));
-                        lvi.SubItems.Add(x.Fan1);
-                        lvi.SubItems.Add(x.Fan2);
-                        lvi.SubItems.Add(x.Fan3);
-                        lvi.SubItems.Add(x.Fan4);
-                        listView2.Items.Add(lvi);
-                    }
-                    label2.Text = Path.GetFileName(openFileDialog.FileName);
-                    button6.Enabled = true;
-                }
-            }
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            button6.Enabled = false;
-            serialPort1.Write("~");
-            foreach(ListViewItem lvi in listView2.Items)
-            {
-                serialPort1.Write(TimestampToMs(lvi.SubItems[0].Text) + '\n' + lvi.SubItems[1].Text + '\n' + lvi.SubItems[2].Text + '\n' + lvi.SubItems[3].Text + '\n' + lvi.SubItems[4].Text + '\n');
-            }
-            listView2.Items.Clear();
-        }
-
         private void button7_Click(object sender, EventArgs e)
         {
             if(started)
             {
+                currentSettings_index = 0;
                 serialPort1.Write("-");
                 timer1.Stop();
                 label5.Text = "00:00.000";
@@ -216,7 +174,6 @@ namespace VRER_Config_Form
             {
                 timerStart = DateTime.Now;
                 timer1.Start();
-                serialPort1.Write("*");
                 button7.Text = "Stop";
                 label4.Text = "Started";
                 label4.ForeColor = System.Drawing.Color.Green;
@@ -228,6 +185,17 @@ namespace VRER_Config_Form
         {
             TimeSpan duration = DateTime.Now - timerStart;
             label5.Text = duration.ToString("mm':'ss'.'fff");
+            if (currentSettings_index < currentSettings.Count)
+            {
+                if (duration.TotalMilliseconds >= currentSettings[currentSettings_index].Timestamp)
+                {
+                    serialPort1.Write(currentSettings[currentSettings_index].Fan1 + "\n"
+                        + currentSettings[currentSettings_index].Fan2 + "\n"
+                        + currentSettings[currentSettings_index].Fan3 + "\n"
+                        + currentSettings[currentSettings_index].Fan4 + "\n");
+                    currentSettings_index++;
+                }
+            }
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -248,7 +216,34 @@ namespace VRER_Config_Form
 
         private void button3_Click(object sender, EventArgs e)
         {
-            serialPort1.Write((checkBox1.Checked ? "1" : "0") + (checkBox2.Checked ? "1" : "0") + (checkBox3.Checked ? "1" : "0") + (checkBox4.Checked ? "1" : "0") + '$');
+            serialPort1.Write((checkBox1.Checked ? "1" : "0") + "\n" + (checkBox2.Checked ? "1" : "0") + "\n" + (checkBox3.Checked ? "1" : "0") + "\n" + (checkBox4.Checked ? "1" : "0") + "\n");
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "JSON File (*.json)|*.json";
+            openFileDialog.Title = "Import  config file...";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamReader sr = new StreamReader(openFileDialog.FileName))
+                {
+                    string json = sr.ReadToEnd();
+                    currentSettings = JsonConvert.DeserializeObject<List<DeviceSettings>>(json);
+                    listView3.Items.Clear();
+                    foreach (DeviceSettings x in currentSettings)
+                    {
+                        ListViewItem lvi = new ListViewItem(MsToTimestamp(x.Timestamp));
+                        lvi.SubItems.Add(x.Fan1);
+                        lvi.SubItems.Add(x.Fan2);
+                        lvi.SubItems.Add(x.Fan3);
+                        lvi.SubItems.Add(x.Fan4);
+                        listView3.Items.Add(lvi);
+                    }
+                    label8.Text = Path.GetFileName(openFileDialog.FileName);
+                }
+            }
         }
     }
 }

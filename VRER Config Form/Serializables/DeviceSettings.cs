@@ -2,7 +2,7 @@
 {
     public class DeviceSettings
     {
-        public string Timestamp { get; set; }
+        public int Timestamp { get; set; }
         public string Fan1 { get; set; }
         public string Fan2 { get; set; }
         public string Fan3 { get; set; }
