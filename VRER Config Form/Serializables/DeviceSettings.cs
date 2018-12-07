@@ -1,4 +1,4 @@
-﻿namespace VRERConfigForm.Serializables
+﻿namespace VRExperienceRoom.Serializables
 {
     public class DeviceSettings
     {
