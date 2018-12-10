@@ -6,28 +6,37 @@ using System.Threading.Tasks;
 using System.IO.Ports;
 using System.Threading;
 
-namespace VRER_Config_Form
+namespace VRExperienceRoom
 {
-    public static class IOHandler
+    public class IOHandler
     {
-        //protected List<SerialPort> ports = new List<SerialPort>();
-        const int SerialPortReadTimeout = 500;
+        private static IOHandler instance;
+
+        public static IOHandler Instance {
+            get
+            {
+                if(instance == null)
+                {
+                    instance = new IOHandler();
+                }
+                return instance;
+            }
+        }
+
+        public List<SerialPort> ports = new List<SerialPort>();
+        const int ThreadSleepLength = 50;
         const int BaudRate = 115200;
 
-        public static List<SerialPort> ScanForArduinos()
+        public void ScanForArduinos()
         {
-            List<SerialPort> ports = new List<SerialPort>();
             foreach (string port in SerialPort.GetPortNames())
             {
                 SerialPort sp = new SerialPort(port, BaudRate);
-                sp.ReadTimeout = SerialPortReadTimeout;
                 sp.Open();
                 sp.Write("@");
-                Thread.Sleep(SerialPortReadTimeout);
+                Thread.Sleep(ThreadSleepLength);
                 if (sp.ReadExisting() == "@")
                 {
-                    //sp.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
-                    sp.ReadTimeout = SerialPort.InfiniteTimeout;
                     ports.Add(sp);
                 }
                 else
@@ -35,41 +44,23 @@ namespace VRER_Config_Form
                     sp.Close();
                 }
             }
-
-            if (ports.Count > 0)
-            {
-                string comports = "";
-                foreach (SerialPort p in ports)
-                {
-                    comports += " " + p.PortName;
-                }
-                PortSelector.Items.Clear();
-                PortSelector.Items.AddRange(ports.Select(x => x.PortName).ToArray());
-                PortSelector.SelectedIndex = 0;
-                PortSelector.Enabled = true;
-                TabWindow.Enabled = true;
-                UpdateLogs(LogType.LOG, "Connection established with Arduino's on the following COM ports:" + comports);
-            }
-            else
-            {
-                PortSelector.Items.Clear();
-                PortSelector.Items.Add("No Arduino's were found. Scan again");
-                PortSelector.SelectedIndex = 0;
-                PortSelector.Enabled = false;
-                TabWindow.Enabled = false;
-                UpdateLogs(LogType.LOG, "No Arduino's could be found");
-            }
         }
 
-        public static bool CheckExistingConnection(SerialPort port)
+        public bool CheckExistingConnection(SerialPort port)
         {
-            port.ReadTimeout = SerialPortReadTimeout;
             port.Write("@");
-            Thread.Sleep(SerialPortReadTimeout);
-            port.ReadTimeout = SerialPort.InfiniteTimeout;
+            Thread.Sleep(ThreadSleepLength);
             if (port.ReadExisting() == null)
                 return false;
             return true;
+        }
+
+        public void StopAllDevices()
+        {
+            foreach (SerialPort port in ports)
+            {
+                port.Write("-");
+            }
         }
     }
 }

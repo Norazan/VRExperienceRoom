@@ -11,48 +11,64 @@ using System.Linq;
 
 namespace VRExperienceRoom
 {
-    /// <summary>
-    /// 
-    /// </summary>
+
     public partial class Form : System.Windows.Forms.Form
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        enum LogType
+        protected enum LogType
         {
             LOG = 0,
             ERROR = 1,
             PORT = 2
         }
 
-        const int MaxTimeCharacterInput = 2;
+        private const int MaxTimeCharacterInput = 2;
 
-        static Scheduler scheduler = null;
+        private static Scheduler scheduler = null;
 
-        bool started = false;
-        DateTime timerStart;
-        //List<DeviceSettings> currentSettings = new List<DeviceSettings>();
-        int currentSettings_index = 0;
-        bool inCountdown = false;
-        bool nonNumberEntered = false;
-        //List<SerialPort> ports = new List<SerialPort>(); 
+        private bool started = false;
+        protected DateTime timerStart;
+        protected bool inCountdown = false;
+        private bool nonNumberEntered = false;
 
-        delegate void UpdateLogsCallback(LogType logType, string text, string portName = null);
+        private delegate void UpdateLogsCallback(LogType logType, string text, string portName = null);
 
         public Form()
 		{
-			InitializeComponent();
+            InitializeComponent();
             ScanCOMPorts();
-		}
+        }
 
         private void ScanCOMPorts()
         {
             UpdateLogs(LogType.LOG, "Scanning COM ports for Arduino's...");
-
+            IOHandler.Instance.ScanForArduinos();
+            if (IOHandler.Instance.ports.Count > 0)
+            {
+                string comports = "";
+                foreach (SerialPort p in IOHandler.Instance.ports)
+                {
+                    p.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
+                    comports += " " + p.PortName;
+                }
+                PortSelector.Items.Clear();
+                PortSelector.Items.AddRange(IOHandler.Instance.ports.Select(x => x.PortName).ToArray());
+                PortSelector.SelectedIndex = 0;
+                PortSelector.Enabled = true;
+                TabWindow.Enabled = true;
+                UpdateLogs(LogType.LOG, "Connection established with Arduino's on the following COM ports:" + comports);
+            }
+            else
+            {
+                PortSelector.Items.Clear();
+                PortSelector.Items.Add("No Arduino's were found. Scan again");
+                PortSelector.SelectedIndex = 0;
+                PortSelector.Enabled = false;
+                TabWindow.Enabled = false;
+                UpdateLogs(LogType.LOG, "No Arduino's could be found");
+            }
         }
 
-        private void UpdateLogs(LogType logType, string text, string portName = null)
+        protected void UpdateLogs(LogType logType, string text, string portName = null)
         {
             if (ConsoleWindowCreate.InvokeRequired && ConsoleWindowRun.InvokeRequired)
             {
@@ -162,11 +178,8 @@ namespace VRExperienceRoom
         {
             if(started)
             {
-                currentSettings_index = 0;
-                foreach (SerialPort port in ports)
-                {
-                    port.Write("-");
-                }  
+                scheduler.settings_index = 0;
+                IOHandler.Instance.StopAllDevices();
                 ProgramTimer.Stop();
                 TimerLabel.Text = "00:00:00";
                 TimerMS.Text = "000";
@@ -178,7 +191,6 @@ namespace VRExperienceRoom
             else
             {
                 timerStart = DateTime.Now;
-                ProgramTimer.Start();
                 TimerButton.Text = "Stop";
                 TimerStatus.Text = "Started";
                 TimerStatus.ForeColor = System.Drawing.Color.Green;
@@ -191,6 +203,7 @@ namespace VRExperienceRoom
                     TimerLabel.ForeColor = System.Drawing.Color.Gray;
                     TimerMS.ForeColor = System.Drawing.Color.Gray;
                 }
+                ProgramTimer.Start();
             }
         }
 
@@ -291,7 +304,7 @@ namespace VRExperienceRoom
 
         private void TestSettingsButton_Click(object sender, EventArgs e)
         {
-            SerialPort currentPort = ports.Where(x => x.PortName == PortSelector.SelectedText).First();
+            SerialPort currentPort = IOHandler.Instance.ports.Where(x => x.PortName == PortSelector.SelectedText).First();
             currentPort.Write(WindRPMInput.Text + "\n" + (HeatInput.Checked ? "1" : "0") + "\n" + (ScentInput.Checked ? "1" : "0") + "\n");
         }
 
@@ -317,6 +330,7 @@ namespace VRExperienceRoom
                         SettingsListRun.Items.Add(lvi);
                     }
                     scheduler = new Scheduler(currentSettings);
+                    ProgramTimer.Tick += new System.EventHandler(scheduler.ProgramTimer_Tick_Scheduler);
                     FileLabel.Text = Path.GetFileName(openFileDialog.FileName);
                     TimerButton.Enabled = true;
                     Countdown.Enabled = true;
@@ -375,7 +389,7 @@ namespace VRExperienceRoom
 
         private void ScanForArduinosMenuItem_Click(object sender, EventArgs e)
         {
-            ScanForArduinos();
+            IOHandler.Instance.ScanForArduinos();
         }
 
         private void ConsoleWindow_TextChanged(object sender, EventArgs e)
