@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CE807A28-A209-463C-AB5F-F3FC44589B76}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>VRER_Config_Form</RootNamespace>
-    <AssemblyName>VRER Config Form</AssemblyName>
+    <RootNamespace>VRExperienceRoom</RootNamespace>
+    <AssemblyName>VR Experience Room Configurer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -48,9 +48,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>ico\virtual-reality.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -69,9 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IOHandler.cs" />
-    <Compile Include="Scheduler.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Scheduler.cs" />
     <Compile Include="Serializables\DeviceSettings.cs" />
     <Compile Include="Form.cs">
       <SubType>Form</SubType>
@@ -93,6 +91,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

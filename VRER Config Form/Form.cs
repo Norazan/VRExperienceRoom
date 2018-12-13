@@ -11,10 +11,9 @@ using System.Linq;
 
 namespace VRExperienceRoom
 {
-
     public partial class Form : System.Windows.Forms.Form
     {
-        protected enum LogType
+        private enum LogType
         {
             LOG = 0,
             ERROR = 1,
@@ -26,14 +25,15 @@ namespace VRExperienceRoom
         private static Scheduler scheduler = null;
 
         private bool started = false;
-        protected DateTime timerStart;
-        protected bool inCountdown = false;
+        public DateTime timerStart;
+        public bool inCountdown = false;
         private bool nonNumberEntered = false;
 
         private delegate void UpdateLogsCallback(LogType logType, string text, string portName = null);
 
         public Form()
 		{
+            Thread.CurrentThread.Name = "MainGUI";
             InitializeComponent();
             ScanCOMPorts();
         }
@@ -68,9 +68,9 @@ namespace VRExperienceRoom
             }
         }
 
-        protected void UpdateLogs(LogType logType, string text, string portName = null)
+        private void UpdateLogs(LogType logType, string text, string portName = null)
         {
-            if (ConsoleWindowCreate.InvokeRequired && ConsoleWindowRun.InvokeRequired)
+            if ((ConsoleWindowCreate.InvokeRequired && ConsoleWindowRun.InvokeRequired) || Thread.CurrentThread.Name != "MainGUI")
             {
                 UpdateLogsCallback d = new UpdateLogsCallback(UpdateLogs);
 
@@ -96,11 +96,41 @@ namespace VRExperienceRoom
             }
         }
 
+        public void StopTimer()
+        {
+            IOHandler.Instance.StopAllDevices();
+            ProgramTimer.Stop();
+            TimerLabel.Text = "00:00:00";
+            TimerMS.Text = "000";
+            TimerButton.Text = "Start";
+            TimerStatus.Text = "Stopped";
+            TimerStatus.ForeColor = System.Drawing.Color.Red;
+            started = false;
+        }
+
+        public void SendSettings(SerialPort port, string WindRPM, bool heat, bool scent)
+        {
+            if (!IOHandler.Instance.CheckExistingConnection(port))
+            {
+                UpdateLogs(LogType.ERROR, "The following port cannot establish connection with Arduino: " + port.PortName);
+                if (ProgramTimer.Enabled)
+                {
+                    StopTimer();
+                    UpdateLogs(LogType.ERROR, "right now its:" + scheduler.settings_index);
+                }
+                ScanCOMPorts();
+            }
+            else
+            {
+                IOHandler.Instance.WriteSettings(port, WindRPM, heat, scent);
+            }
+        }
+
         #region Events and Listeners
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs args)
         {
             SerialPort sp = (SerialPort)sender;
-            string readString = sp.ReadExisting();
+            string readString = sp.ReadLine();
             UpdateLogs(LogType.PORT, readString, sp.PortName);
         }
 
@@ -117,22 +147,24 @@ namespace VRExperienceRoom
             if (int.Parse(seconds) > 59)
                 seconds = "59";
 
-            ListViewItem lvi = new ListViewItem(hours.PadLeft(2, '0') + ":" + minutes.PadLeft(2, '0') + ":" + seconds.PadLeft(2, '0'));
+            ListViewItem lvi = new ListViewItem(PortSelector.SelectedItem.ToString());
+            lvi.SubItems.Add(hours.PadLeft(2, '0') + ":" + minutes.PadLeft(2, '0') + ":" + seconds.PadLeft(2, '0'));
             lvi.SubItems.Add(WindRPMInput.Text);
             lvi.SubItems.Add(HeatInput.Checked ? "On" : "Off");
             lvi.SubItems.Add(ScentInput.Checked ? "On" : "Off");
-            var existingLvi = SettingsListCreate.Items.Cast<ListViewItem>().FirstOrDefault(x => x.SubItems[0].Text == lvi.SubItems[0].Text);
+            var existingLvi = SettingsListCreate.Items.Cast<ListViewItem>().FirstOrDefault(
+                x => x.SubItems[0].Text == lvi.SubItems[0].Text &&
+                x.SubItems[1].Text == lvi.SubItems[1].Text);
             if (existingLvi == null)
             {
                 SettingsListCreate.Items.Add(lvi);
-                List<ListViewItem> tempCollection = SettingsListCreate.Items.Cast<ListViewItem>().OrderBy(x => DateTime.Parse(x.SubItems[0].Text).TimeOfDay).ToList();
+                List<ListViewItem> tempCollection = SettingsListCreate.Items.Cast<ListViewItem>().OrderBy(x => DateTime.Parse(x.SubItems[1].Text).TimeOfDay).ToList();
                 SettingsListCreate.Items.Clear();
                 SettingsListCreate.Items.AddRange(tempCollection.ToArray());
             }
             else
             {
                 SettingsListCreate.Items[existingLvi.Index] = lvi;
-                lvi.Selected = true;
             }
         }
 
@@ -150,10 +182,11 @@ namespace VRExperienceRoom
             foreach(ListViewItem x in SettingsListCreate.Items)
             {
                 DeviceSettings setting = new DeviceSettings();
-                setting.Timestamp = TimerUtil.TimestampToMs(x.SubItems[0].Text);
-                setting.WindRPM = x.SubItems[1].Text;
-                setting.Heat = x.SubItems[2].Text;
-                setting.Mist = x.SubItems[3].Text;
+                setting.Port = x.SubItems[0].Text;
+                setting.Timestamp = TimerUtil.TimestampToMs(x.SubItems[1].Text);
+                setting.WindRPM = x.SubItems[2].Text;
+                setting.Heat = x.SubItems[3].Text;
+                setting.Mist = x.SubItems[4].Text;
                 settings.Add(setting);
             }
             string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -178,18 +211,11 @@ namespace VRExperienceRoom
         {
             if(started)
             {
-                scheduler.settings_index = 0;
-                IOHandler.Instance.StopAllDevices();
-                ProgramTimer.Stop();
-                TimerLabel.Text = "00:00:00";
-                TimerMS.Text = "000";
-                TimerButton.Text = "Start";
-                TimerStatus.Text = "Stopped";
-                TimerStatus.ForeColor = System.Drawing.Color.Red;
-                started = false;
+                StopTimer();
             }
             else
             {
+                scheduler.settings_index = 0;
                 timerStart = DateTime.Now;
                 TimerButton.Text = "Stop";
                 TimerStatus.Text = "Started";
@@ -304,8 +330,8 @@ namespace VRExperienceRoom
 
         private void TestSettingsButton_Click(object sender, EventArgs e)
         {
-            SerialPort currentPort = IOHandler.Instance.ports.Where(x => x.PortName == PortSelector.SelectedText).First();
-            currentPort.Write(WindRPMInput.Text + "\n" + (HeatInput.Checked ? "1" : "0") + "\n" + (ScentInput.Checked ? "1" : "0") + "\n");
+            SerialPort currentPort = IOHandler.Instance.ports.Where(x => x.PortName == PortSelector.SelectedItem.ToString()).First();
+            SendSettings(currentPort, WindRPMInput.Text, HeatInput.Checked, ScentInput.Checked);
         }
 
         private void ImportButton_Click(object sender, EventArgs e)
@@ -323,14 +349,15 @@ namespace VRExperienceRoom
                     SettingsListRun.Items.Clear();
                     foreach (DeviceSettings x in currentSettings)
                     {
-                        ListViewItem lvi = new ListViewItem(TimerUtil.MsToTimestamp(x.Timestamp));
+                        ListViewItem lvi = new ListViewItem(x.Port);
+                        lvi.SubItems.Add(TimerUtil.MsToTimestamp(x.Timestamp));
                         lvi.SubItems.Add(x.WindRPM);
                         lvi.SubItems.Add(x.Heat);
                         lvi.SubItems.Add(x.Mist);
                         SettingsListRun.Items.Add(lvi);
                     }
-                    scheduler = new Scheduler(currentSettings);
-                    ProgramTimer.Tick += new System.EventHandler(scheduler.ProgramTimer_Tick_Scheduler);
+                    scheduler = new Scheduler(currentSettings, this);
+                    ProgramTimer.Tick += new EventHandler(scheduler.ProgramTimer_Tick_Scheduler);
                     FileLabel.Text = Path.GetFileName(openFileDialog.FileName);
                     TimerButton.Enabled = true;
                     Countdown.Enabled = true;
@@ -389,7 +416,7 @@ namespace VRExperienceRoom
 
         private void ScanForArduinosMenuItem_Click(object sender, EventArgs e)
         {
-            IOHandler.Instance.ScanForArduinos();
+            ScanCOMPorts();
         }
 
         private void ConsoleWindow_TextChanged(object sender, EventArgs e)

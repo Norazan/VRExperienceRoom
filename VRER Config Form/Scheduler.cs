@@ -6,38 +6,37 @@ using System.IO.Ports;
 
 namespace VRExperienceRoom
 {
-    public class Scheduler : Form
+    public class Scheduler
     {
         public List<DeviceSettings> settings;
         public int settings_index = 0;
+        private Form form;
 
-        public Scheduler(List<DeviceSettings> _settings)
+        public Scheduler(List<DeviceSettings> _settings, Form _form)
         {
             settings = _settings;
+            form = _form;
         }
 
         public void ProgramTimer_Tick_Scheduler(object sender, EventArgs e)
         {
-            if (!inCountdown)
+            if (!form.inCountdown)
             {
-                TimeSpan duration = DateTime.Now - timerStart;
+                TimeSpan duration = DateTime.Now - form.timerStart;
                 if (settings_index < settings.Count)
                 {
                     if (duration.TotalMilliseconds >= settings[settings_index].Timestamp)
                     {
                         SerialPort currentPort = IOHandler.Instance.ports.Where(x => x.PortName == settings[settings_index].Port).First();
-                        if (!IOHandler.Instance.CheckExistingConnection(currentPort))
-                        {
-                            UpdateLogs(LogType.ERROR, "The following port cannot establish connection with Arduino: " + currentPort.PortName);
-                        }
-                        else
-                        {
-                            currentPort.Write(settings[settings_index].WindRPM + "\n"
-                                + (settings[settings_index].Heat == "On" ? 1 : 0) + "\n"
-                                + (settings[settings_index].Mist == "On" ? 1 : 0) + "\n");
-                            settings_index++;
-                        }
+                        bool heat = settings[settings_index].Heat == "On";
+                        bool scent = settings[settings_index].Mist == "On";
+                        form.SendSettings(currentPort, settings[settings_index].WindRPM, heat, scent);
+                        settings_index++;
                     }
+                }
+                else
+                {
+                    form.StopTimer();
                 }
             }
         }

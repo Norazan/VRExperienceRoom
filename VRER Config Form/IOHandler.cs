@@ -29,37 +29,81 @@ namespace VRExperienceRoom
 
         public void ScanForArduinos()
         {
+            CloseAllPorts();
+            ports.Clear();
             foreach (string port in SerialPort.GetPortNames())
             {
-                SerialPort sp = new SerialPort(port, BaudRate);
-                sp.Open();
-                sp.Write("@");
-                Thread.Sleep(ThreadSleepLength);
-                if (sp.ReadExisting() == "@")
+                try
                 {
-                    ports.Add(sp);
+                    SerialPort sp = new SerialPort(port, BaudRate);
+                    sp.Open();
+                    sp.Write("@");
+                    if (sp.ReadChar() == '@')
+                    {
+                        ports.Add(sp);
+                    }
+                    else
+                    {
+                        sp.Close();
+                    }
                 }
-                else
+                catch (Exception)
                 {
-                    sp.Close();
+                    continue;
                 }
             }
         }
 
+        public void WriteSettings(SerialPort port, string WindRPM, bool heat, bool scent)
+        {
+            char heat_char = heat ? '1' : '0';
+            char scent_char = scent ? '1' : '0';
+            port.Write(WindRPM + '\n' + heat_char + '\n' + scent_char + '\n');
+        }
+
         public bool CheckExistingConnection(SerialPort port)
         {
-            port.Write("@");
-            Thread.Sleep(ThreadSleepLength);
-            if (port.ReadExisting() == null)
+            try
+            {
+                port.Write("@");
+                if (port.ReadChar() == -1)
+                    return false;
+            }
+            catch (Exception)
+            {
                 return false;
+            }
+            
             return true;
+        }
+
+        public void CloseAllPorts()
+        {
+            foreach(SerialPort p in ports)
+            {
+                try
+                {
+                    p.Close();
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
         }
 
         public void StopAllDevices()
         {
             foreach (SerialPort port in ports)
             {
-                port.Write("-");
+                try
+                {
+                    port.Write("-");
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
             }
         }
     }
