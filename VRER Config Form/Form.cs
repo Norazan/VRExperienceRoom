@@ -70,7 +70,8 @@ namespace VRExperienceRoom
                 PortSelector.Items.AddRange(IOHandler.Instance.ports.Select(x => x.PortName).ToArray());
                 PortSelector.SelectedIndex = 0;
                 PortSelector.Enabled = true;
-                TabWindow.Enabled = true;
+                CreateTab.Enabled = true;
+                RunTab.Enabled = true;
                 UpdateLogs(LogType.LOG, "Connection established with Arduino's on the following COM ports:" + comports);
             }
             else
@@ -79,7 +80,8 @@ namespace VRExperienceRoom
                 PortSelector.Items.Add("No Arduino's were found. Scan again");
                 PortSelector.SelectedIndex = 0;
                 PortSelector.Enabled = false;
-                TabWindow.Enabled = false;
+                CreateTab.Enabled = false;
+                RunTab.Enabled = false;
                 UpdateLogs(LogType.LOG, "No Arduino's could be found");
             }
         }

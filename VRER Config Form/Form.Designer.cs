@@ -32,7 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form));
             this.button1 = new System.Windows.Forms.Button();
             this.TabWindow = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.CreateTab = new System.Windows.Forms.TabPage();
             this.PortSelector = new System.Windows.Forms.ComboBox();
             this.HoursInput = new System.Windows.Forms.TextBox();
             this.ScentInput = new System.Windows.Forms.CheckBox();
@@ -55,7 +55,7 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.RunTab = new System.Windows.Forms.TabPage();
             this.SettingsListRun = new System.Windows.Forms.ListView();
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -75,9 +75,9 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scanForArduinosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TabWindow.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.CreateTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WindRPMScrollbar)).BeginInit();
-            this.tabPage3.SuspendLayout();
+            this.RunTab.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -93,41 +93,41 @@
             // 
             // TabWindow
             // 
-            this.TabWindow.Controls.Add(this.tabPage1);
-            this.TabWindow.Controls.Add(this.tabPage3);
+            this.TabWindow.Controls.Add(this.CreateTab);
+            this.TabWindow.Controls.Add(this.RunTab);
             this.TabWindow.Location = new System.Drawing.Point(12, 27);
             this.TabWindow.Name = "TabWindow";
             this.TabWindow.SelectedIndex = 0;
             this.TabWindow.Size = new System.Drawing.Size(711, 478);
             this.TabWindow.TabIndex = 0;
             // 
-            // tabPage1
+            // CreateTab
             // 
-            this.tabPage1.Controls.Add(this.PortSelector);
-            this.tabPage1.Controls.Add(this.HoursInput);
-            this.tabPage1.Controls.Add(this.ScentInput);
-            this.tabPage1.Controls.Add(this.HeatInput);
-            this.tabPage1.Controls.Add(this.WindRPMInput);
-            this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.WindRPMScrollbar);
-            this.tabPage1.Controls.Add(this.label7);
-            this.tabPage1.Controls.Add(this.label6);
-            this.tabPage1.Controls.Add(this.SecondsInput);
-            this.tabPage1.Controls.Add(this.MinutesInput);
-            this.tabPage1.Controls.Add(this.ConsoleWindowCreate);
-            this.tabPage1.Controls.Add(this.button4);
-            this.tabPage1.Controls.Add(this.button3);
-            this.tabPage1.Controls.Add(this.button2);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.SettingsListCreate);
-            this.tabPage1.Controls.Add(this.button1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(703, 452);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Create";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.CreateTab.Controls.Add(this.PortSelector);
+            this.CreateTab.Controls.Add(this.HoursInput);
+            this.CreateTab.Controls.Add(this.ScentInput);
+            this.CreateTab.Controls.Add(this.HeatInput);
+            this.CreateTab.Controls.Add(this.WindRPMInput);
+            this.CreateTab.Controls.Add(this.label2);
+            this.CreateTab.Controls.Add(this.WindRPMScrollbar);
+            this.CreateTab.Controls.Add(this.label7);
+            this.CreateTab.Controls.Add(this.label6);
+            this.CreateTab.Controls.Add(this.SecondsInput);
+            this.CreateTab.Controls.Add(this.MinutesInput);
+            this.CreateTab.Controls.Add(this.ConsoleWindowCreate);
+            this.CreateTab.Controls.Add(this.button4);
+            this.CreateTab.Controls.Add(this.button3);
+            this.CreateTab.Controls.Add(this.button2);
+            this.CreateTab.Controls.Add(this.label1);
+            this.CreateTab.Controls.Add(this.SettingsListCreate);
+            this.CreateTab.Controls.Add(this.button1);
+            this.CreateTab.Location = new System.Drawing.Point(4, 22);
+            this.CreateTab.Name = "CreateTab";
+            this.CreateTab.Padding = new System.Windows.Forms.Padding(3);
+            this.CreateTab.Size = new System.Drawing.Size(703, 452);
+            this.CreateTab.TabIndex = 0;
+            this.CreateTab.Text = "Create";
+            this.CreateTab.UseVisualStyleBackColor = true;
             // 
             // PortSelector
             // 
@@ -365,23 +365,23 @@
             this.columnHeader4.Text = "Mist";
             this.columnHeader4.Width = 47;
             // 
-            // tabPage3
+            // RunTab
             // 
-            this.tabPage3.Controls.Add(this.SettingsListRun);
-            this.tabPage3.Controls.Add(this.TimerMS);
-            this.tabPage3.Controls.Add(this.FileLabel);
-            this.tabPage3.Controls.Add(this.button8);
-            this.tabPage3.Controls.Add(this.TimerLabel);
-            this.tabPage3.Controls.Add(this.Countdown);
-            this.tabPage3.Controls.Add(this.TimerStatus);
-            this.tabPage3.Controls.Add(this.TimerButton);
-            this.tabPage3.Controls.Add(this.ConsoleWindowRun);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(703, 452);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Run";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.RunTab.Controls.Add(this.SettingsListRun);
+            this.RunTab.Controls.Add(this.TimerMS);
+            this.RunTab.Controls.Add(this.FileLabel);
+            this.RunTab.Controls.Add(this.button8);
+            this.RunTab.Controls.Add(this.TimerLabel);
+            this.RunTab.Controls.Add(this.Countdown);
+            this.RunTab.Controls.Add(this.TimerStatus);
+            this.RunTab.Controls.Add(this.TimerButton);
+            this.RunTab.Controls.Add(this.ConsoleWindowRun);
+            this.RunTab.Location = new System.Drawing.Point(4, 22);
+            this.RunTab.Name = "RunTab";
+            this.RunTab.Size = new System.Drawing.Size(703, 452);
+            this.RunTab.TabIndex = 2;
+            this.RunTab.Text = "Run";
+            this.RunTab.UseVisualStyleBackColor = true;
             // 
             // SettingsListRun
             // 
@@ -554,11 +554,11 @@
             this.Name = "Form";
             this.Text = "VR Experience Room Configurer";
             this.TabWindow.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
+            this.CreateTab.ResumeLayout(false);
+            this.CreateTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WindRPMScrollbar)).EndInit();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
+            this.RunTab.ResumeLayout(false);
+            this.RunTab.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -574,7 +574,7 @@
         #endregion
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TabControl TabWindow;
-        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage CreateTab;
         private System.Windows.Forms.ListView SettingsListCreate;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
@@ -585,7 +585,7 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.RichTextBox ConsoleWindowCreate;
-        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TabPage RunTab;
         private System.Windows.Forms.CheckBox Countdown;
         private System.Windows.Forms.Label TimerStatus;
         private System.Windows.Forms.Button TimerButton;
