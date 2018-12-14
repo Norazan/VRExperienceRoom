@@ -1,5 +1,8 @@
 ﻿namespace VRExperienceRoom.Serializables
 {
+    /// <summary>
+    /// Serializabe class for every device setting. Also stores the corresponding COM port and timestamp.
+    /// </summary>
     public class DeviceSettings
     {
         public string Port { get; set; }

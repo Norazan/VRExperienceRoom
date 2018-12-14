@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace VRExperienceRoom.Util
 {
+    /// <summary>
+    /// Utility class for converting between a timestamp notation and milliseconds.
+    /// </summary>
     public static class TimerUtil
     {
+        /// <summary>
+        /// Converts milliseconds into a timestamp string.
+        /// </summary>
+        /// <param name="ms">The milliseconds to be converted.</param>
+        /// <returns>The converted timestamp string.</returns>
         public static string MsToTimestamp(int ms)
         {
             var seconds = ms / 1000;
@@ -18,6 +26,11 @@ namespace VRExperienceRoom.Util
             return hours.ToString("00") + ":" + minutes.ToString("00") + ":" + seconds.ToString("00");
         }
 
+        /// <summary>
+        /// Converts a timestamp string into milliseconds.
+        /// </summary>
+        /// <param name="timestamp">The timestamp string to be converted.</param>
+        /// <returns>The converted milliseconds.</returns>
         public static int TimestampToMs(string timestamp)
         {
             string[] splittedTimestamp = timestamp.Split(':');
