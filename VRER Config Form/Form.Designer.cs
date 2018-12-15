@@ -133,8 +133,6 @@
             // 
             this.PortSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PortSelector.FormattingEnabled = true;
-            this.PortSelector.Items.AddRange(new object[] {
-            "Test1"});
             this.PortSelector.Location = new System.Drawing.Point(417, 14);
             this.PortSelector.Name = "PortSelector";
             this.PortSelector.Size = new System.Drawing.Size(261, 21);
